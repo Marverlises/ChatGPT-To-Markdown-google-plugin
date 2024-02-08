@@ -38,7 +38,7 @@ Download respository
 
 **Step2:**
 
-![image-20240208173306163](../../OTHERS/software/Typora/Typora/images/image-20240208173306163.png)
+![image-20240208173306163-1707387378543-1](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/5a371f83-1a2a-422e-99c0-7317074f434f)
 
 Select the repository folder and click to conform.
 
@@ -46,12 +46,13 @@ Select the repository folder and click to conform.
 
 When you open chatgpt website, you'll see the **Export Chat** button
 
-![image-20240208173337825](../../OTHERS/software/Typora/Typora/images/image-20240208173337825.png)
+![image-20240208173337825](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/3e75a5bb-4a3d-459c-bfff-7a695a88a431)
+
 
 Select the chat you want to export, then click the green botton, you'll get the **.md** file, which can be opened by Typora just like the image below:
 
 **Result:**
 
-![image-20240208173402018](../../OTHERS/software/Typora/Typora/images/image-20240208173402018.png)
+![image-20240208173402018](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/f7a8d7fa-2edd-4118-92d8-72e920cdbfbf)
 
-![image-20240208173511856](../../OTHERS/software/Typora/Typora/images/image-20240208173511856.png)
+![image-20240208173511856](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/d1b4a046-76e9-4330-803e-6188d1cf91df)
