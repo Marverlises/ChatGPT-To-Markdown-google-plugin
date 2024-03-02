@@ -176,6 +176,48 @@ function htmlToMarkdown(html) {
             header.parentNode.replaceChild(headerTextNode, header);
         });
     }
+    // 9. 对于换行符的处理——把所有p标签替换为换行符
+    doc.querySelectorAll('p').forEach(p => {
+        const markdownParagraph = '\n' + p.textContent + '\n';
+        const paragraphTextNode = document.createTextNode(markdownParagraph);
+        p.parentNode.replaceChild(paragraphTextNode, p);
+    });
+    // 10. 表格处理
+    /**
+     * 表格处理——格式
+     * | asd  |      |      |
+     * | ---- | ---- | ---- |
+     * |      | asd  |      |
+     * |      |      | qwe  |
+     * |      |      | wqe  |
+     */
+    // 处理表格
+    doc.querySelectorAll('table').forEach(table => {
+        let markdown = '';
+        // 处理表头
+        table.querySelectorAll('thead tr').forEach(tr => {
+            tr.querySelectorAll('th').forEach(th => {
+                markdown += `| ${th.textContent} `;
+            });
+            markdown += '|\n';
+            tr.querySelectorAll('th').forEach(() => {
+                markdown += '| ---- ';
+            });
+            markdown += '|\n';
+        });
+        // 处理表格内容
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            tr.querySelectorAll('td').forEach(td => {
+                markdown += `| ${td.textContent} `;
+            });
+            markdown += '|\n';
+        });
+        // 创建一个文本节点来替换原来的<table>元素
+        const markdownTextNode = document.createTextNode('\n' + markdown.trim() + '\n');
+        table.parentNode.replaceChild(markdownTextNode, table);
+    });
+
+
     // 移除所有剩余的HTML标签，只留下文本内容
     // 这里我们转换整个body的innerHTML为文本，然后移除所有HTML标签
     let markdown = doc.body.innerHTML.replace(/<[^>]*>/g, '');
