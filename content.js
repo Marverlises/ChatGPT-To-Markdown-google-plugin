@@ -37,20 +37,20 @@ window.onload = () => {
 function exportChatAsMarkdown() {
     let markdownContent = "";
     // 使用querySelector方法选择匹配选择器的第一个元素
-    const userElements = document.querySelectorAll('div[data-message-author-role="user"]');
-    // 使用querySelectorAll方法选择所有匹配选择器的元素
-    const answerElements = document.querySelectorAll('div[data-message-author-role="assistant"]');
+    let allElements = document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full')
     // 遍历所有选中的元素并提取其内部的文本内容
-    let minLen = Math.min(userElements.length, answerElements.length);
-    for (let i = 0; i < minLen; i++) {
-        let userText = userElements[i].textContent.trim();
-        let answerText = answerElements[i].innerHTML.trim();
+    for (let i = 0; i < allElements.length; i += 2) {
+        let userText = allElements[i].textContent.trim();
+        let answerText = allElements[i + 1].innerHTML.trim();
         // 将用户的问题添加到Markdown内容中
-        // 1. 对answer的html格式的文本进行处理
+        // 1. 对userText进行HTML转换为Markdown
+        userText = htmlToMarkdown(userText);
+        // 2. 对answerText进行HTML转换为Markdown
         answerText = htmlToMarkdown(answerText);
-        // 2. 将其添加到markdownContent中
+        // 3. 将其添加到markdownContent中
         markdownContent += `\n # 用户问题 \n ${userText} \n # chatGPT \n ${answerText}`;
     }
+    markdownContent = markdownContent.replace(/&amp;/g, '&');
 
     // 如果markdownContent不为空，则调用下载函数
     if (markdownContent) {
@@ -123,8 +123,11 @@ function htmlToMarkdown(html) {
     // 5. 处理图片
     // 处理图片
     doc.querySelectorAll('img').forEach(img => {
+        alert(img.src)
         const markdownImage = `![${img.alt}](${img.src})`;
+        console.log(markdownImage);
         const imgTextNode = document.createTextNode(markdownImage);
+        console.log(imgTextNode)
         img.parentNode.replaceChild(imgTextNode, img);
     });
 
