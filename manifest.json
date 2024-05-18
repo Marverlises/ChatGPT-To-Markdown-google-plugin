@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT to MarkDown plus",
-  "version": "1.0",
+  "version": "2.1",
   "description": "Export chat history from ChatGPT website to normal format as Markdown, which can be opened via typora exactly.",
   "permissions": [],
   "action": {
@@ -17,7 +17,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.openai.com/*"],
+      "matches": ["https://*.openai.com/*", "https://chatgpt.com/*"],
       "js": ["content.js"],
       "run_at": "document_end"
     }
