@@ -3,9 +3,20 @@
  * @Time 2024/2/8 15:02
  * @Description
  */
-// 当DOM加载完成时，添加一个点击事件监听器
+
 window.onload = () => {
-    const exportButton = document.createElement('export-chat');
+    createExportButton();
+    // 定时检查并重新插入按钮
+    setInterval(() => {
+        if (!document.getElementById('export-chat')) {
+            createExportButton();
+        }
+    }, 1000); // 每秒检查一次
+}
+
+function createExportButton() {
+    // 创建按钮元素
+    const exportButton = document.createElement('button');
     exportButton.textContent = 'Export Chat';
     exportButton.id = 'export-chat';
 
@@ -13,10 +24,10 @@ window.onload = () => {
         position: 'fixed',
         height: '36px',
         top: '10px',
-        right: '60px',
-        zIndex: '800',
+        right: '120px',
+        zIndex: '10000',  // 确保 z-index 足够高
         padding: '10px',
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#4cafa3',
         color: 'white',
         border: 'none',
         borderRadius: '5px',
@@ -24,14 +35,15 @@ window.onload = () => {
         textAlign: 'center',
         lineHeight: '16px'
     };
-    // 将样式应用到按钮
-    for (let property in styles) {
-        exportButton.style[property] = styles[property];
-    }
+
     document.body.appendChild(exportButton);
+    Object.assign(exportButton.style, styles);
+
     // 添加点击事件监听器
     exportButton.addEventListener('click', exportChatAsMarkdown);
 }
+
+
 
 // 导出聊天记录为Markdown格式
 function exportChatAsMarkdown() {
