@@ -144,11 +144,11 @@ function htmlToMarkdown(html) {
     // 代码块的代码类型处理
     // 代码块类型——在pre下第一个div的第一个div的span中,代码块在pre下第一个div的第而个div中
     doc.querySelectorAll('pre').forEach(pre => {
-        // 代码类型位于第一个div > 第一个div > span中
-        const codeType = pre.querySelector('div > div:first-child > span').textContent;
+        // 代码类型位于第一个div > 第一个div
+        const codeType = pre.querySelector('div > div:first-child').textContent;
         // 代码本身位于第一个div的第二个div中
         // 使用:nth-child(2)选择器来准确定位第二个div
-        const markdownCode = pre.querySelector('div > div:nth-child(2) > code').textContent;
+        const markdownCode = pre.querySelector('div > div:nth-child(3) > code').textContent;
         // 使用innerHTML替换pre元素的内容
         pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\`\`\`\n`;
     });
