@@ -4,6 +4,13 @@
  * @Description
  */
 
+// 监听来自 popup.js 的消息，实现按下按钮后导出聊天记录
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "exportChatAsMarkdown") {
+        exportChatAsMarkdown();
+    }
+});
+
 window.onload = () => {
     createExportButton();
     // 定时检查并重新插入按钮
@@ -24,7 +31,8 @@ function createExportButton() {
         position: 'fixed',
         height: '36px',
         top: '10px',
-        right: '120px',
+        // 保持在正中央
+        right: '35%',
         zIndex: '10000',  // 确保 z-index 足够高
         padding: '10px',
         backgroundColor: '#4cafa3',
@@ -42,7 +50,6 @@ function createExportButton() {
     // 添加点击事件监听器
     exportButton.addEventListener('click', exportChatAsMarkdown);
 }
-
 
 
 // 导出聊天记录为Markdown格式
@@ -104,8 +111,14 @@ function htmlToMarkdown(html) {
     doc.querySelectorAll('mrow').forEach(mrow => mrow.remove());
     // 转换<annotation encoding="application/x-tex">为Markdown格式
     doc.querySelectorAll('annotation[encoding="application/x-tex"]').forEach(element => {
-        const latex = element.textContent;
-        element.replaceWith(`$${latex}$`);
+        // 如果公式的某个父类为class="katex-display"，则为块级公式，否则为行内公式
+        if (element.closest('.katex-display')) {
+            const latex = element.textContent;
+            element.replaceWith(`\n$$\n${latex}\n$$\n`);
+        } else {
+            const latex = element.textContent;
+            element.replaceWith(`$${latex}$`);
+        }
     });
 
     // 2. 加粗处理
@@ -122,6 +135,14 @@ function htmlToMarkdown(html) {
         const markdownItalic = `*${italic.textContent}*`;
         const italicTextNode = document.createTextNode(markdownItalic);
         italic.parentNode.replaceChild(italicTextNode, italic);
+    });
+
+    // 11. 行内代码处理
+    // 处理行内代码——要筛选在p标签包裹下的 code 标签
+    doc.querySelectorAll('p code').forEach(code => {
+        const markdownCode = `\`${code.textContent}\``;
+        const codeTextNode = document.createTextNode(markdownCode);
+        code.parentNode.replaceChild(codeTextNode, code);
     });
 
     // 4. 链接处理

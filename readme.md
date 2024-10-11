@@ -31,7 +31,6 @@ This Chrome extension aims to help users export chat records from the ChatGPT we
 With this extension, users can effortlessly convert chat records from the ChatGPT website into Markdown format, making it more convenient to share, edit, and archive their conversations.
 
 ---
-
 **Step 1:**
 
 Download respository
