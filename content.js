@@ -250,9 +250,17 @@ function htmlToMarkdown(html) {
         table.parentNode.replaceChild(markdownTextNode, table);
     });
 
-
     // 移除所有剩余的HTML标签，只留下文本内容
     // 这里我们转换整个body的innerHTML为文本，然后移除所有HTML标签
     let markdown = doc.body.innerHTML.replace(/<[^>]*>/g, '');
+    // 处理大于号小于号，大于等于号小于等于号，不等于号在转换时出现的问题
+    // 如果是- &gt; 则转换为 - $\gt$
+    markdown = markdown.replaceAll(/- &gt;/g, '- $\\gt$');
+    markdown = markdown.replaceAll(/&gt;/g, '>');
+    markdown = markdown.replaceAll(/&lt;/g, '<');
+    markdown = markdown.replaceAll(/&ge;/g, '>=');
+    markdown = markdown.replaceAll(/&le;/g, '<=');
+    markdown = markdown.replaceAll(/&ne;/g, '\\neq');
+
     return markdown.trim();
 }
