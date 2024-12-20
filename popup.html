@@ -1,15 +1,11 @@
-<!--/**-->
-<!--* @Author Ye bv-->
-<!--* @Time 2024/2/8 15:02-->
-<!--* @Description-->
-<!--*/-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>ChatGPT Exporter</title>
     <style>
-        #exportButton {
-            background-color: #4CAF50; /* Green */
+        /* 公用按钮样式 */
+        button {
+            background-color: #4CAF50; /* 绿色背景 */
             border: 2px solid #4CAF50;
             color: white;
             padding: 10px 32px;
@@ -20,11 +16,23 @@
             margin: 4px 2px;
             cursor: pointer;
             font-family: Arial, sans-serif;
-            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2),
+            0 6px 20px 0 rgba(0, 0, 0, 0.19);
             transition-duration: 0.4s;
         }
 
-        #exportButton:hover {
+        /* Export 按钮的圆角 */
+        #exportButton {
+            border-radius: 12px;
+        }
+
+        /* Copy 按钮的圆角 */
+        #copyButton {
+            border-radius: 12px;
+        }
+
+        /* 悬停效果 */
+        button:hover {
             background-color: #45a049;
             border: 2px solid #45a049;
         }
@@ -32,6 +40,8 @@
 </head>
 <body>
 <button id="exportButton">Export as Markdown</button>
+<!-- 添加一个按钮，实现点击弹出对话框进行选择复制 -->
+<button id="copyButton">Copy to Clipboard</button>
 <script src="popup.js"></script>
 </body>
 </html>

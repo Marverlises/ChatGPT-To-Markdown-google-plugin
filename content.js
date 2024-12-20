@@ -4,11 +4,17 @@
  * @Description
  */
 
+
 // 监听来自 popup.js 的消息，实现按下按钮后导出聊天记录
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // # 通过判断 request.action 的值来执行相应的操作
     if (request.action === "exportChatAsMarkdown") {
         exportChatAsMarkdown();
     }
+    if (request.action === "copyChatAsMarkdown") {
+        copyChatAsMarkdown();
+    }
+
 });
 
 window.onload = () => {
@@ -20,6 +26,175 @@ window.onload = () => {
         }
     }, 1000); // 每秒检查一次
 }
+
+function copyChatAsMarkdown() {
+    let markdownContent = "";
+    // 使用 querySelector 方法选择匹配选择器的所有元素
+    let allElements = document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full');
+
+    // 遍历所有选中的元素并提取其内部的文本内容
+    for (let i = 0; i < allElements.length; i += 2) {
+        let userText = allElements[i].textContent.trim();
+        let answerText = allElements[i + 1].innerHTML.trim();
+
+        // 将用户的问题添加到Markdown内容中
+        // 1. 对 userText 进行 HTML 转换为 Markdown
+        userText = htmlToMarkdown(userText);
+        // 2. 对 answerText 进行 HTML 转换为 Markdown
+        answerText = htmlToMarkdown(answerText);
+        // 3. 将其添加到 markdownContent 中
+        markdownContent += `\n # 用户问题 \n ${userText} \n # chatGPT \n ${answerText}`;
+    }
+
+    markdownContent = markdownContent.replace(/&amp;/g, '&');
+    // 检查是否已经存在模态框，防止多次创建
+    if (document.getElementById('markdown-modal')) {
+        return; // 如果模态框已经存在，则不再创建
+    }
+
+    // 创建模态背景
+    const modal = document.createElement('div');
+    modal.id = 'markdown-modal';
+    Object.assign(modal.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: '1000'
+    });
+
+    // 创建模态内容容器
+    const modalContent = document.createElement('div');
+    Object.assign(modalContent.style, {
+        backgroundColor: '#fff',
+        color: '#000', // 设置文本颜色为黑色
+        padding: '20px',
+        borderRadius: '8px',
+        width: '50%', // 设置宽度为屏幕的50%
+        height: '80%', // 设置高度为屏幕的80%
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        overflow: 'hidden' // 防止内容溢出
+    });
+
+    // 创建文本区域
+    const textarea = document.createElement('textarea');
+    textarea.value = markdownContent;
+    Object.assign(textarea.style, {
+        flex: '1',
+        resize: 'none',
+        width: '100%',
+        padding: '10px',
+        fontSize: '14px',
+        fontFamily: 'monospace',
+        marginBottom: '10px',
+        boxSizing: 'border-box',
+        color: '#000', // 设置文本颜色为黑色
+        backgroundColor: '#f9f9f9', // 设置文本区域背景颜色为浅灰色，增强可读性
+        border: '1px solid #ccc', // 添加边框以提高可见性
+        borderRadius: '4px'
+    });
+    textarea.setAttribute('readonly', true); // 只读，防止用户修改内容
+
+    // 创建按钮容器
+    const buttonContainer = document.createElement('div');
+    Object.assign(buttonContainer.style, {
+        display: 'flex',
+        justifyContent: 'flex-end'
+    });
+
+    // 创建复制按钮
+    const copyButton = document.createElement('button');
+    copyButton.textContent = '复制';
+    Object.assign(copyButton.style, {
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        backgroundColor: '#28A745',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px',
+        marginRight: '10px'
+    });
+
+    // 创建关闭按钮
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '关闭';
+    Object.assign(closeButton.style, {
+        padding: '8px 16px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        backgroundColor: '#007BFF',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '4px'
+    });
+
+    // 将按钮添加到按钮容器
+    buttonContainer.appendChild(copyButton);
+    buttonContainer.appendChild(closeButton);
+
+    // 将文本区域和按钮容器添加到模态内容容器
+    modalContent.appendChild(textarea);
+    modalContent.appendChild(buttonContainer);
+
+    // 将模态内容容器添加到模态背景
+    modal.appendChild(modalContent);
+
+    // 将模态背景添加到文档主体
+    document.body.appendChild(modal);
+
+    // 自动聚焦文本区域
+    textarea.focus();
+
+    // 监听复制按钮点击事件
+    copyButton.addEventListener('click', () => {
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value)
+            .then(() => {
+                copyButton.textContent = '已复制';
+                copyButton.style.backgroundColor = '#28A745';
+                setTimeout(() => {
+                    copyButton.textContent = '复制';
+                    copyButton.style.backgroundColor = '#28A745';
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('复制失败', err);
+            });
+    });
+
+    // 监听关闭按钮点击事件
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(modal);
+    });
+
+    // 监听键盘事件（Esc 键关闭模态）
+    const escListener = (e) => {
+        if (e.key === 'Escape') {
+            if (document.getElementById('markdown-modal')) {
+                document.body.removeChild(modal);
+                document.removeEventListener('keydown', escListener);
+            }
+        }
+    };
+    document.addEventListener('keydown', escListener);
+
+    // 点击模态背景关闭模态
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+            document.removeEventListener('keydown', escListener);
+        }
+    });
+}
+
 
 function createExportButton() {
     // 创建按钮元素
