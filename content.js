@@ -4,17 +4,14 @@
  * @Description
  */
 
-
-// 监听来自 popup.js 的消息，实现按下按钮后导出聊天记录
+// 监听来自 popup.js 的消息，实现按下按钮后导出或复制聊天记录
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // # 通过判断 request.action 的值来执行相应的操作
     if (request.action === "exportChatAsMarkdown") {
         exportChatAsMarkdown();
     }
     if (request.action === "copyChatAsMarkdown") {
         copyChatAsMarkdown();
     }
-
 });
 
 window.onload = () => {
@@ -25,32 +22,46 @@ window.onload = () => {
             createExportButton();
         }
     }, 1000); // 每秒检查一次
+};
+
+// 获取对话内容的元素
+function getConversationElements() {
+    const currentUrl = window.location.href;
+    if (currentUrl.includes("openai.com") || currentUrl.includes("chatgpt.com")) {
+        // ChatGPT 的对话选择器
+        return document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full');
+    } else if (currentUrl.includes("grok.com")) {
+        // Grok 的对话选择器：选择所有消息泡泡
+        return document.querySelectorAll('div.message-bubble');
+    }
+    return [];
 }
 
+// 复制聊天记录为 Markdown 格式
 function copyChatAsMarkdown() {
     let markdownContent = "";
-    // 使用 querySelector 方法选择匹配选择器的所有元素
-    let allElements = document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full');
+    let allElements = getConversationElements();
 
-    // 遍历所有选中的元素并提取其内部的文本内容
     for (let i = 0; i < allElements.length; i += 2) {
+        if (!allElements[i + 1]) break; // 防止越界
         let userText = allElements[i].textContent.trim();
-        let answerText = allElements[i + 1].innerHTML.trim();
+        let answerHtml = allElements[i + 1].innerHTML.trim();
 
-        // 将用户的问题添加到Markdown内容中
-        // 1. 对 userText 进行 HTML 转换为 Markdown
         userText = htmlToMarkdown(userText);
-        // 2. 对 answerText 进行 HTML 转换为 Markdown
-        answerText = htmlToMarkdown(answerText);
-        // 3. 将其添加到 markdownContent 中
-        markdownContent += `\n # 用户问题 \n ${userText} \n # chatGPT \n ${answerText}`;
+        answerHtml = htmlToMarkdown(answerHtml);
+
+        const isGrok = window.location.href.includes("grok.com");
+        markdownContent += `\n# 用户问题\n${userText}\n# ${isGrok ? 'Grok' : 'ChatGPT'}\n${answerHtml}`;
     }
 
     markdownContent = markdownContent.replace(/&amp;/g, '&');
-    // 检查是否已经存在模态框，防止多次创建
-    if (document.getElementById('markdown-modal')) {
-        return; // 如果模态框已经存在，则不再创建
+    if (!markdownContent) {
+        console.log("未找到对话内容");
+        return;
     }
+
+    // 检查是否已经存在模态框
+    if (document.getElementById('markdown-modal')) return;
 
     // 创建模态背景
     const modal = document.createElement('div');
@@ -72,15 +83,15 @@ function copyChatAsMarkdown() {
     const modalContent = document.createElement('div');
     Object.assign(modalContent.style, {
         backgroundColor: '#fff',
-        color: '#000', // 设置文本颜色为黑色
+        color: '#000',
         padding: '20px',
         borderRadius: '8px',
-        width: '50%', // 设置宽度为屏幕的50%
-        height: '80%', // 设置高度为屏幕的80%
+        width: '50%',
+        height: '80%',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        overflow: 'hidden' // 防止内容溢出
+        overflow: 'hidden'
     });
 
     // 创建文本区域
@@ -95,12 +106,12 @@ function copyChatAsMarkdown() {
         fontFamily: 'monospace',
         marginBottom: '10px',
         boxSizing: 'border-box',
-        color: '#000', // 设置文本颜色为黑色
-        backgroundColor: '#f9f9f9', // 设置文本区域背景颜色为浅灰色，增强可读性
-        border: '1px solid #ccc', // 添加边框以提高可见性
+        color: '#000',
+        backgroundColor: '#f9f9f9',
+        border: '1px solid #ccc',
         borderRadius: '4px'
     });
-    textarea.setAttribute('readonly', true); // 只读，防止用户修改内容
+    textarea.setAttribute('readonly', true);
 
     // 创建按钮容器
     const buttonContainer = document.createElement('div');
@@ -136,57 +147,39 @@ function copyChatAsMarkdown() {
         borderRadius: '4px'
     });
 
-    // 将按钮添加到按钮容器
     buttonContainer.appendChild(copyButton);
     buttonContainer.appendChild(closeButton);
-
-    // 将文本区域和按钮容器添加到模态内容容器
     modalContent.appendChild(textarea);
     modalContent.appendChild(buttonContainer);
-
-    // 将模态内容容器添加到模态背景
     modal.appendChild(modalContent);
-
-    // 将模态背景添加到文档主体
     document.body.appendChild(modal);
 
-    // 自动聚焦文本区域
     textarea.focus();
 
-    // 监听复制按钮点击事件
     copyButton.addEventListener('click', () => {
         textarea.select();
         navigator.clipboard.writeText(textarea.value)
             .then(() => {
                 copyButton.textContent = '已复制';
-                copyButton.style.backgroundColor = '#28A745';
                 setTimeout(() => {
                     copyButton.textContent = '复制';
-                    copyButton.style.backgroundColor = '#28A745';
                 }, 2000);
             })
-            .catch(err => {
-                console.error('复制失败', err);
-            });
+            .catch(err => console.error('复制失败', err));
     });
 
-    // 监听关闭按钮点击事件
     closeButton.addEventListener('click', () => {
         document.body.removeChild(modal);
     });
 
-    // 监听键盘事件（Esc 键关闭模态）
     const escListener = (e) => {
-        if (e.key === 'Escape') {
-            if (document.getElementById('markdown-modal')) {
-                document.body.removeChild(modal);
-                document.removeEventListener('keydown', escListener);
-            }
+        if (e.key === 'Escape' && document.getElementById('markdown-modal')) {
+            document.body.removeChild(modal);
+            document.removeEventListener('keydown', escListener);
         }
     };
     document.addEventListener('keydown', escListener);
 
-    // 点击模态背景关闭模态
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             document.body.removeChild(modal);
@@ -195,20 +188,17 @@ function copyChatAsMarkdown() {
     });
 }
 
-
+// 创建导出按钮
 function createExportButton() {
-    // 创建按钮元素
     const exportButton = document.createElement('button');
     exportButton.textContent = 'Export Chat';
     exportButton.id = 'export-chat';
-
     const styles = {
         position: 'fixed',
         height: '36px',
         top: '10px',
-        // 保持在正中央
         right: '35%',
-        zIndex: '10000',  // 确保 z-index 足够高
+        zIndex: '10000',
         padding: '10px',
         backgroundColor: '#4cafa3',
         color: 'white',
@@ -218,46 +208,39 @@ function createExportButton() {
         textAlign: 'center',
         lineHeight: '16px'
     };
-
     document.body.appendChild(exportButton);
     Object.assign(exportButton.style, styles);
-
-    // 添加点击事件监听器
     exportButton.addEventListener('click', exportChatAsMarkdown);
 }
 
-
-// 导出聊天记录为Markdown格式
+// 导出聊天记录为 Markdown 格式
 function exportChatAsMarkdown() {
     let markdownContent = "";
-    // 使用querySelector方法选择匹配选择器的第一个元素
-    let allElements = document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full')
-    // 遍历所有选中的元素并提取其内部的文本内容
+    let allElements = getConversationElements();
+
     for (let i = 0; i < allElements.length; i += 2) {
+        if (!allElements[i + 1]) break; // 防止越界
         let userText = allElements[i].textContent.trim();
-        let answerText = allElements[i + 1].innerHTML.trim();
-        // 将用户的问题添加到Markdown内容中
-        // 1. 对userText进行HTML转换为Markdown
+        let answerHtml = allElements[i + 1].innerHTML.trim();
+
         userText = htmlToMarkdown(userText);
-        // 2. 对answerText进行HTML转换为Markdown
-        answerText = htmlToMarkdown(answerText);
-        // 3. 将其添加到markdownContent中
-        markdownContent += `\n # 用户问题 \n ${userText} \n # chatGPT \n ${answerText}`;
+        answerHtml = htmlToMarkdown(answerHtml);
+
+        const isGrok = window.location.href.includes("grok.com");
+        markdownContent += `\n# 用户问题\n${userText}\n# ${isGrok ? 'Grok' : 'ChatGPT'}\n${answerHtml}`;
     }
     markdownContent = markdownContent.replace(/&amp;/g, '&');
 
-    // 如果markdownContent不为空，则调用下载函数
     if (markdownContent) {
-        // 调用之前定义的下载函数
         download(markdownContent, 'chat-export.md', 'text/markdown');
     } else {
-        console.log("Could not find any questions or answers.");
+        console.log("未找到对话内容");
     }
 }
 
 // 下载函数
 function download(data, filename, type) {
-    var file = new Blob([data], {type: type});
+    var file = new Blob([data], { type: type });
     if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveOrOpenBlob(file, filename);
     } else {
@@ -274,19 +257,15 @@ function download(data, filename, type) {
     }
 }
 
-// 将HTML转换为Markdown
+// 将 HTML 转换为 Markdown
 function htmlToMarkdown(html) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
     // 1. 处理公式
-    // 移除包含class="katex-html"的<span>及其所有内容
     doc.querySelectorAll('span.katex-html').forEach(element => element.remove());
-    // 直接移除所有的<mrow>标签及其内容
     doc.querySelectorAll('mrow').forEach(mrow => mrow.remove());
-    // 转换<annotation encoding="application/x-tex">为Markdown格式
     doc.querySelectorAll('annotation[encoding="application/x-tex"]').forEach(element => {
-        // 如果公式的某个父类为class="katex-display"，则为块级公式，否则为行内公式
         if (element.closest('.katex-display')) {
             const latex = element.textContent;
             element.replaceWith(`\n$$\n${latex}\n$$\n`);
@@ -297,112 +276,76 @@ function htmlToMarkdown(html) {
     });
 
     // 2. 加粗处理
-    // 处理加粗文本
     doc.querySelectorAll('strong, b').forEach(bold => {
         const markdownBold = `**${bold.textContent}**`;
-        const boldTextNode = document.createTextNode(markdownBold);
-        bold.parentNode.replaceChild(boldTextNode, bold);
+        bold.parentNode.replaceChild(document.createTextNode(markdownBold), bold);
     });
 
     // 3. 斜体处理
-    // 处理斜体文本
     doc.querySelectorAll('em, i').forEach(italic => {
         const markdownItalic = `*${italic.textContent}*`;
-        const italicTextNode = document.createTextNode(markdownItalic);
-        italic.parentNode.replaceChild(italicTextNode, italic);
+        italic.parentNode.replaceChild(document.createTextNode(markdownItalic), italic);
     });
 
-    // 11. 行内代码处理
-    // 处理行内代码——要筛选在p标签包裹下的 code 标签
+    // 4. 行内代码处理
     doc.querySelectorAll('p code').forEach(code => {
         const markdownCode = `\`${code.textContent}\``;
-        const codeTextNode = document.createTextNode(markdownCode);
-        code.parentNode.replaceChild(codeTextNode, code);
+        code.parentNode.replaceChild(document.createTextNode(markdownCode), code);
     });
 
-    // 4. 链接处理
-    // 处理链接
+    // 5. 链接处理
     doc.querySelectorAll('a').forEach(link => {
         const markdownLink = `[${link.textContent}](${link.href})`;
-        const linkTextNode = document.createTextNode(markdownLink);
-        link.parentNode.replaceChild(linkTextNode, link);
+        link.parentNode.replaceChild(document.createTextNode(markdownLink), link);
     });
 
-    // 5. 处理图片
-    // 处理图片
+    // 6. 处理图片
     doc.querySelectorAll('img').forEach(img => {
         const markdownImage = `![${img.alt}](${img.src})`;
-        const imgTextNode = document.createTextNode(markdownImage);
-        img.parentNode.replaceChild(imgTextNode, img);
+        img.parentNode.replaceChild(document.createTextNode(markdownImage), img);
     });
 
-    // 6. 代码块处理
-    // 代码块的代码类型处理
-    // 代码块类型——在pre下第一个div的第一个div的span中,代码块在pre下第一个div的第而个div中
+    // 7. 代码块处理
     doc.querySelectorAll('pre').forEach(pre => {
-        // 代码类型位于第一个div > 第一个div
-        const codeType = pre.querySelector('div > div:first-child').textContent;
-        // 代码本身位于第一个div的第二个div中
-        // 使用:nth-child(2)选择器来准确定位第二个div
-        const markdownCode = pre.querySelector('div > div:nth-child(3) > code').textContent;
-        // 使用innerHTML替换pre元素的内容
+        const codeType = pre.querySelector('div > div:first-child')?.textContent || '';
+        const markdownCode = pre.querySelector('div > div:nth-child(3) > code')?.textContent || pre.textContent;
         pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\`\`\`\n`;
     });
 
-    // 7. 处理列表ol与ul
-    // 分别处理文档中的<ol>和<ul>，但不嵌套处理
-    // 处理<ul>元素，转换为Markdown格式的无序列表
+    // 8. 处理列表
     doc.querySelectorAll('ul').forEach(ul => {
         let markdown = '';
-        // 仅选择直接子级的<li>元素进行转换
         ul.querySelectorAll(':scope > li').forEach(li => {
             markdown += `- ${li.textContent.trim()}\n`;
         });
-        // 创建一个文本节点来替换原来的<ul>元素
-        const markdownTextNode = document.createTextNode('\n' + markdown.trim());
-        ul.parentNode.replaceChild(markdownTextNode, ul);
+        ul.parentNode.replaceChild(document.createTextNode('\n' + markdown.trim()), ul);
     });
 
-    // 处理<ol>元素，转换为Markdown格式的有序列表
     doc.querySelectorAll('ol').forEach(ol => {
         let markdown = '';
-        // 仅选择直接子级的<li>元素进行转换
         ol.querySelectorAll(':scope > li').forEach((li, index) => {
             markdown += `${index + 1}. ${li.textContent.trim()}\n`;
         });
-        // 创建一个文本节点来替换原来的<ol>元素
-        const markdownTextNode = document.createTextNode('\n' + markdown.trim());
-        ol.parentNode.replaceChild(markdownTextNode, ol);
+        ol.parentNode.replaceChild(document.createTextNode('\n' + markdown.trim()), ol);
     });
 
-    // 8. 标题处理
-    // 处理标题，从<h1>到<h6>
+    // 9. 标题处理
     for (let i = 1; i <= 6; i++) {
         doc.querySelectorAll(`h${i}`).forEach(header => {
             const markdownHeader = '\n' + `${'#'.repeat(i)} ${header.textContent}\n`;
-            const headerTextNode = document.createTextNode(markdownHeader);
-            header.parentNode.replaceChild(headerTextNode, header);
+            header.parentNode.replaceChild(document.createTextNode(markdownHeader), header);
         });
     }
-    // 9. 对于换行符的处理——把所有p标签替换为换行符
+
+    // 10. 段落处理
     doc.querySelectorAll('p').forEach(p => {
         const markdownParagraph = '\n' + p.textContent + '\n';
-        const paragraphTextNode = document.createTextNode(markdownParagraph);
-        p.parentNode.replaceChild(paragraphTextNode, p);
+        p.parentNode.replaceChild(document.createTextNode(markdownParagraph), p);
     });
-    // 10. 表格处理
-    /**
-     * 表格处理——格式
-     * | asd  |      |      |
-     * | ---- | ---- | ---- |
-     * |      | asd  |      |
-     * |      |      | qwe  |
-     * |      |      | wqe  |
-     */
-    // 处理表格
+
+    // 11. 表格处理
     doc.querySelectorAll('table').forEach(table => {
         let markdown = '';
-        // 处理表头
         table.querySelectorAll('thead tr').forEach(tr => {
             tr.querySelectorAll('th').forEach(th => {
                 markdown += `| ${th.textContent} `;
@@ -413,29 +356,22 @@ function htmlToMarkdown(html) {
             });
             markdown += '|\n';
         });
-        // 处理表格内容
         table.querySelectorAll('tbody tr').forEach(tr => {
             tr.querySelectorAll('td').forEach(td => {
                 markdown += `| ${td.textContent} `;
             });
             markdown += '|\n';
         });
-        // 创建一个文本节点来替换原来的<table>元素
-        const markdownTextNode = document.createTextNode('\n' + markdown.trim() + '\n');
-        table.parentNode.replaceChild(markdownTextNode, table);
+        table.parentNode.replaceChild(document.createTextNode('\n' + markdown.trim() + '\n'), table);
     });
 
-    // 移除所有剩余的HTML标签，只留下文本内容
-    // 这里我们转换整个body的innerHTML为文本，然后移除所有HTML标签
     let markdown = doc.body.innerHTML.replace(/<[^>]*>/g, '');
-    // 处理大于号小于号，大于等于号小于等于号，不等于号在转换时出现的问题
-    // 如果是- &gt; 则转换为 - $\gt$
     markdown = markdown.replaceAll(/- &gt;/g, '- $\\gt$');
-    markdown = markdown.replaceAll(/&gt;/g, '>');
-    markdown = markdown.replaceAll(/&lt;/g, '<');
-    markdown = markdown.replaceAll(/&ge;/g, '>=');
-    markdown = markdown.replaceAll(/&le;/g, '<=');
-    markdown = markdown.replaceAll(/&ne;/g, '\\neq');
+    markdown = markdown.replaceAll(/>/g, '>');
+    markdown = markdown.replaceAll(/</g, '<');
+    markdown = markdown.replaceAll(/≥/g, '>=');
+    markdown = markdown.replaceAll(/≤/g, '<=');
+    markdown = markdown.replaceAll(/≠/g, '\\neq');
 
     return markdown.trim();
 }

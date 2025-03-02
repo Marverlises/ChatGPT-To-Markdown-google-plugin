@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT to MarkDown plus",
-  "version": "4.5",
-  "description": "Export chat history from ChatGPT website to normal format as Markdown, which can be opened via typora exactly.",
+  "version": "5.0",
+  "description": "Export chat history from ChatGPT and Grok websites to normal format as Markdown, which can be opened via typora exactly.",
   "permissions": [],
   "action": {
     "default_icon": {
@@ -17,8 +17,14 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.openai.com/*", "https://chatgpt.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.openai.com/*",
+        "https://chatgpt.com/*",
+        "https://grok.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_end"
     }
   ]
