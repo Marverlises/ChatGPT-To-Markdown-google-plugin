@@ -28,10 +28,10 @@ window.onload = () => {
 function getConversationElements() {
     const currentUrl = window.location.href;
     if (currentUrl.includes("openai.com") || currentUrl.includes("chatgpt.com")) {
-        // ChatGPT 的对话选择器
-        return document.querySelectorAll('div.flex.flex-grow.flex-col.max-w-full');
+        // ChatGPT 的对话选择器 - Select all message containers
+        return document.querySelectorAll('div[data-message-id]');
     } else if (currentUrl.includes("grok.com")) {
-        // Grok 的对话选择器：选择所有消息泡泡
+        // Grok 的对话选择器：选择所有消息泡泡 (Keep as is, verify if Grok changed)
         return document.querySelectorAll('div.message-bubble');
     }
     return [];
