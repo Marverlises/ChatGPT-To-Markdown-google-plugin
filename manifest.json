@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT to MarkDown plus",
-  "version": "5.0",
+  "version": "5.5",
   "description": "Export chat history from ChatGPT and Grok websites to normal format as Markdown, which can be opened via typora exactly.",
   "permissions": [],
   "action": {
