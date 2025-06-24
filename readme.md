@@ -17,6 +17,7 @@
 - 💾 **双重导出选项**：支持直接下载.md文件或复制到剪贴板
 - 🖼️ **Typora完美兼容**：特别优化以确保在Typora等Markdown编辑器中正确显示
 - 🔘 **界面控制**：可以通过弹窗开关控制页面上导出按钮的显示
+- 🛠️ **对应Google插件**：提供[Chrome插件](https://chromewebstore.google.com/detail/chatgpt-to-markdown-plus/gcocgmkjaagjcijfmocbjghbpinamnhp?hl=zh-CN&utm_source=ext_sidebar)版本，方便在Google平台上使用，插件市场搜索 **ChatGPT to MarkDown plus**
 
 ## 🛠️ 安装步骤
 
