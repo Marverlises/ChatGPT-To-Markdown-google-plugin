@@ -4,6 +4,9 @@
  * @Description
  */
 
+// 全局变量，用于跟踪按钮显示状态
+let shouldShowExportButton = true;
+
 // 监听来自 popup.js 的消息，实现按下按钮后导出或复制聊天记录
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "exportChatAsMarkdown") {
@@ -12,17 +15,49 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "copyChatAsMarkdown") {
         copyChatAsMarkdown();
     }
+    if (request.action === "toggleExportButton") {
+        shouldShowExportButton = request.show;
+        toggleExportButtonVisibility();
+        sendResponse({success: true});
+    }
+    // 新增：查询当前按钮状态
+    if (request.action === "getButtonStatus") {
+        sendResponse({show: shouldShowExportButton});
+    }
+    return true; // 保持消息通道开放，以便异步响应
 });
 
+// 在页面加载完成后执行
 window.onload = () => {
+    // 默认创建按钮
     createExportButton();
-    // 定时检查并重新插入按钮
+    
+    // 定时检查并重新插入按钮（如果应该显示）
     setInterval(() => {
-        if (!document.getElementById('export-chat')) {
+        if (shouldShowExportButton && !document.getElementById('export-chat')) {
             createExportButton();
+        } else if (!shouldShowExportButton && document.getElementById('export-chat')) {
+            document.getElementById('export-chat').remove();
         }
     }, 1000); // 每秒检查一次
 };
+
+// 切换导出按钮的可见性
+function toggleExportButtonVisibility() {
+    const existingButton = document.getElementById('export-chat');
+    
+    if (shouldShowExportButton) {
+        // 如果应该显示按钮但不存在，则创建它
+        if (!existingButton) {
+            createExportButton();
+        }
+    } else {
+        // 如果不应该显示按钮但存在，则移除它
+        if (existingButton) {
+            existingButton.remove();
+        }
+    }
+}
 
 // 获取对话内容的元素
 function getConversationElements() {
@@ -268,10 +303,13 @@ function htmlToMarkdown(html) {
     doc.querySelectorAll('annotation[encoding="application/x-tex"]').forEach(element => {
         if (element.closest('.katex-display')) {
             const latex = element.textContent;
-            element.replaceWith(`\n$$\n${latex}\n$$\n`);
+            // 删除latex两边的空格
+            const trimmedLatex = latex.trim();
+            element.replaceWith(`\n$$\n${trimmedLatex}\n$$\n`);
         } else {
             const latex = element.textContent;
-            element.replaceWith(`$${latex}$`);
+            const trimmedLatex = latex.trim();
+            element.replaceWith(`$${trimmedLatex}$`);
         }
     });
 

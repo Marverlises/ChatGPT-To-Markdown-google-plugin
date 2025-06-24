@@ -36,12 +36,75 @@
             background-color: #45a049;
             border: 2px solid #45a049;
         }
+
+        /* 开关按钮样式 */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
     </style>
 </head>
 <body>
 <button id="exportButton">Export as Markdown</button>
 <!-- 添加一个按钮，实现点击弹出对话框进行选择复制 -->
 <button id="copyButton">Copy to Clipboard</button>
+
+<!-- 添加开关控制Export Chat按钮的显示 -->
+<div class="switch-container">
+    <label class="switch">
+        <input type="checkbox" id="showExportButton">
+        <span class="slider"></span>
+    </label>
+    <span>Show 'Export Chat' button on page</span>
+</div>
+
 <script src="popup.js"></script>
 </body>
 </html>
