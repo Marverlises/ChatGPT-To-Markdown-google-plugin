@@ -20,7 +20,8 @@
       "matches": [
         "https://*.openai.com/*",
         "https://chatgpt.com/*",
-        "https://grok.com/*"
+        "https://grok.com/*",
+        "https://gemini.google.com/*"
       ],
       "js": [
         "content.js"

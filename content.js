@@ -73,9 +73,22 @@ function getConversationElements() {
         isGrok = true;
         return document.querySelectorAll('div.message-bubble');
     } else if (currentUrl.includes("gemini.google.com")) {
-        // Gemini 的对话选择器：选择所有消息容器 —— class = conversation-container message-actions-hover-boundary ng-star-inserted
+        // Gemini 的对话选择器：选择所有消息容器 —— infinite-scroller 下的第一个div
         isGemini = true;
-        return document.querySelectorAll('.conversation-container.message-actions-hover-boundary.ng-star-inserted');
+        result = [];
+        // 取出所有的 user-query-content 和 model-response
+        const userQueries = document.querySelectorAll('user-query-content');
+        const modelResponses = document.querySelectorAll('model-response');
+        // 按照顺序将 user-query-content 和 model-response 组合成一对
+        for (let i = 0; i < userQueries.length; i++) {
+            if (i < modelResponses.length) {
+                result.push(userQueries[i]);
+                result.push(modelResponses[i]);
+            } else {
+                result.push(userQueries[i]);
+            }
+        }
+        return result;
     }
     return [];
 }
@@ -93,8 +106,7 @@ function copyChatAsMarkdown() {
         userText = htmlToMarkdown(userText);
         answerHtml = htmlToMarkdown(answerHtml);
 
-        const isGrok = window.location.href.includes("grok.com");
-        markdownContent += `\n# 用户问题\n${userText}\n# ${isGrok ? 'Grok' : 'ChatGPT'}\n${answerHtml}`;
+        markdownContent += `\n# 用户问题\n${userText}\n# 回答\n${answerHtml}`;
     }
 
     markdownContent = markdownContent.replace(/&amp;/g, '&');
@@ -269,8 +281,9 @@ function exportChatAsMarkdown() {
         userText = htmlToMarkdown(userText);
         answerHtml = htmlToMarkdown(answerHtml);
 
-        const isGrok = window.location.href.includes("grok.com");
-        markdownContent += `\n# 用户问题\n${userText}\n# ${isGrok ? 'Grok' : 'ChatGPT'}\n${answerHtml}`;
+        // const isGrok = window.location.href.includes("grok.com");
+        // markdownContent += `\n# 用户问题\n${userText}\n# ${isGrok ? 'Grok' : 'ChatGPT'}\n${answerHtml}`;
+        markdownContent += `\n# 用户问题\n${userText}\n# 回答\n${answerHtml}`;
     }
     markdownContent = markdownContent.replace(/&amp;/g, '&');
 
@@ -306,7 +319,10 @@ function htmlToMarkdown(html) {
     const doc = parser.parseFromString(html, 'text/html');
 
     // 1. 处理公式
-    doc.querySelectorAll('span.katex-html').forEach(element => element.remove());
+    // FIXME: Gemini 公式处理时渲染使用html前端渲染控制角标等，所以行内公式只能按照文本格式显示
+    if (!isGemini) {
+        doc.querySelectorAll('span.katex-html').forEach(element => element.remove());
+    }
     doc.querySelectorAll('mrow').forEach(mrow => mrow.remove());
     doc.querySelectorAll('annotation[encoding="application/x-tex"]').forEach(element => {
         if (element.closest('.katex-display')) {
@@ -356,7 +372,7 @@ function htmlToMarkdown(html) {
         doc.querySelectorAll('pre').forEach(pre => {
             const codeType = pre.querySelector('div > div:first-child')?.textContent || '';
             const markdownCode = pre.querySelector('div > div:nth-child(3) > code')?.textContent || pre.textContent;
-            pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\`\`\`\n`;
+            pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\n\`\`\``;
         });
     } else if (isGrok) {
         // 控制台打印
@@ -368,10 +384,15 @@ function htmlToMarkdown(html) {
             // 获取第三个子元素的文本内容
             const markdownCode = div.querySelector('div > div:nth-child(3) > code')?.textContent || div.textContent;
             // 替换内容
-            div.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\n\`\`\`\n`;
+            div.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\n\`\`\``;
         });
     } else if (isGemini) {
-
+        // 取出class="code-block“
+        doc.querySelectorAll('code-block').forEach(div => {
+            const codeType = div.querySelector('div > div > span')?.textContent || '';
+            const markdownCode = div.querySelector('div > div:nth-child(2) > div > pre')?.textContent || div.textContent;
+            div.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\n\`\`\``;
+        });
     }
 
     // 8. 处理列表
