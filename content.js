@@ -6,7 +6,9 @@
 
 // 全局变量，用于跟踪按钮显示状态
 let shouldShowExportButton = true;
-
+let isGrok = false;
+let isGemini = false;
+let isChatGPT = false;
 // 监听来自 popup.js 的消息，实现按下按钮后导出或复制聊天记录
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "exportChatAsMarkdown") {
@@ -31,7 +33,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 window.onload = () => {
     // 默认创建按钮
     createExportButton();
-    
+
     // 定时检查并重新插入按钮（如果应该显示）
     setInterval(() => {
         if (shouldShowExportButton && !document.getElementById('export-chat')) {
@@ -45,7 +47,7 @@ window.onload = () => {
 // 切换导出按钮的可见性
 function toggleExportButtonVisibility() {
     const existingButton = document.getElementById('export-chat');
-    
+
     if (shouldShowExportButton) {
         // 如果应该显示按钮但不存在，则创建它
         if (!existingButton) {
@@ -64,10 +66,16 @@ function getConversationElements() {
     const currentUrl = window.location.href;
     if (currentUrl.includes("openai.com") || currentUrl.includes("chatgpt.com")) {
         // ChatGPT 的对话选择器 - Select all message containers
+        isChatGPT = true;
         return document.querySelectorAll('div[data-message-id]');
     } else if (currentUrl.includes("grok.com")) {
         // Grok 的对话选择器：选择所有消息泡泡 (Keep as is, verify if Grok changed)
+        isGrok = true;
         return document.querySelectorAll('div.message-bubble');
+    } else if (currentUrl.includes("gemini.google.com")) {
+        // Gemini 的对话选择器：选择所有消息容器 —— class = conversation-container message-actions-hover-boundary ng-star-inserted
+        isGemini = true;
+        return document.querySelectorAll('.conversation-container.message-actions-hover-boundary.ng-star-inserted');
     }
     return [];
 }
@@ -275,7 +283,7 @@ function exportChatAsMarkdown() {
 
 // 下载函数
 function download(data, filename, type) {
-    var file = new Blob([data], { type: type });
+    var file = new Blob([data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveOrOpenBlob(file, filename);
     } else {
@@ -344,11 +352,27 @@ function htmlToMarkdown(html) {
     });
 
     // 7. 代码块处理
-    doc.querySelectorAll('pre').forEach(pre => {
-        const codeType = pre.querySelector('div > div:first-child')?.textContent || '';
-        const markdownCode = pre.querySelector('div > div:nth-child(3) > code')?.textContent || pre.textContent;
-        pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\`\`\`\n`;
-    });
+    if (isChatGPT) {
+        doc.querySelectorAll('pre').forEach(pre => {
+            const codeType = pre.querySelector('div > div:first-child')?.textContent || '';
+            const markdownCode = pre.querySelector('div > div:nth-child(3) > code')?.textContent || pre.textContent;
+            pre.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\`\`\`\n`;
+        });
+    } else if (isGrok) {
+        // 控制台打印
+        // 选择 class="not-prose" 的 div
+        doc.querySelectorAll('div.not-prose').forEach(div => {
+
+            // 获取第一个子元素的文本内容
+            const codeType = div.querySelector('div > div > span')?.textContent || '';
+            // 获取第三个子元素的文本内容
+            const markdownCode = div.querySelector('div > div:nth-child(3) > code')?.textContent || div.textContent;
+            // 替换内容
+            div.innerHTML = `\n\`\`\`${codeType}\n${markdownCode}\n\`\`\`\n`;
+        });
+    } else if (isGemini) {
+
+    }
 
     // 8. 处理列表
     doc.querySelectorAll('ul').forEach(ul => {
