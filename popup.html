@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>ChatGPT Exporter</title>
     <style>
+        /* Body and html sizing */
+        html, body {
+            width: 400px;
+            min-height: 600px;
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+
         /* 公用按钮样式 */
         button {
             background-color: #4CAF50; /* 绿色背景 */
@@ -89,21 +99,208 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        /* Multi-export section */
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .conversation-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: white;
+        }
+
+        .conversation-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .conversation-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .conversation-title {
+            flex: 1;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin: 10px 0;
+            display: none;
+        }
+
+        #loadConversations {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+
+        #loadConversations:hover {
+            background-color: #0b7dda;
+            border-color: #0b7dda;
+        }
+
+        #exportSelected {
+            background-color: #FF9800;
+            border-color: #FF9800;
+        }
+
+        #exportSelected:hover {
+            background-color: #e68900;
+            border-color: #e68900;
+        }
+
+        #selectAll, #deselectAll {
+            background-color: #607D8B;
+            border-color: #607D8B;
+            font-size: 14px;
+            padding: 6px 12px;
+        }
+
+        #selectAll:hover, #deselectAll:hover {
+            background-color: #4a6572;
+            border-color: #4a6572;
+        }
+
+        #cancelExport {
+            background-color: #f44336;
+            border-color: #f44336;
+        }
+
+        #cancelExport:hover {
+            background-color: #da190b;
+            border-color: #da190b;
+        }
     </style>
 </head>
 <body>
-<button id="exportButton">Export as Markdown</button>
-<!-- 添加一个按钮，实现点击弹出对话框进行选择复制 -->
-<button id="copyButton">Copy to Clipboard</button>
+    <!-- Single conversation export section -->
+    <div class="section">
+        <div class="section-title">Single Conversation</div>
+        <button id="exportButton">Export as Markdown</button>
+        <!-- 添加一个按钮，实现点击弹出对话框进行选择复制 -->
+        <button id="copyButton">Copy to Clipboard</button>
 
-<!-- 添加开关控制Export Chat按钮的显示 -->
-<div class="switch-container">
-    <label class="switch">
-        <input type="checkbox" id="showExportButton">
-        <span class="slider"></span>
-    </label>
-    <span>Show 'Export Chat' button</span>
-</div>
+        <!-- 添加开关控制Export Chat按钮的显示 -->
+        <div class="switch-container">
+            <label class="switch">
+                <input type="checkbox" id="showExportButton">
+                <span class="slider"></span>
+            </label>
+            <span>Show 'Export Chat' button</span>
+        </div>
+    </div>
+
+    <!-- Multi-export section -->
+    <div class="section">
+        <div class="section-title">Multi-Conversation Export</div>
+
+        <!-- Speed Settings -->
+        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px;">Speed Settings</div>
+
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; margin-bottom: 3px; font-size: 13px;">
+                    Page Load Wait (seconds):
+                    <span id="pageLoadDisplay" style="color: #4CAF50; font-weight: bold;">2</span>
+                </label>
+                <input type="range" id="pageLoadWait" min="1" max="10" value="2" step="0.5"
+                       style="width: 100%;">
+                <div style="font-size: 11px; color: #666;">
+                    Lower = faster but may miss content
+                </div>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; margin-bottom: 3px; font-size: 13px;">
+                    Delay Between Conversations (seconds):
+                    <span id="delayDisplay" style="color: #4CAF50; font-weight: bold;">0.5</span>
+                </label>
+                <input type="range" id="conversationDelay" min="0" max="5" value="0.5" step="0.5"
+                       style="width: 100%;">
+                <div style="font-size: 11px; color: #666;">
+                    Lower = faster but may trigger rate limits
+                </div>
+            </div>
+
+            <button id="saveSettings" style="padding: 5px 15px; font-size: 13px; margin-top: 5px;">
+                Save Settings
+            </button>
+            <span id="saveStatus" style="color: green; font-size: 12px; margin-left: 10px;"></span>
+        </div>
+
+        <button id="loadConversations">Load Conversation List</button>
+
+        <div class="conversation-list" id="conversationList" style="display: none;">
+            <div style="margin-bottom: 10px;">
+                <button id="selectAll">Select All</button>
+                <button id="deselectAll">Deselect All</button>
+            </div>
+            <div id="conversationItems"></div>
+        </div>
+
+        <div class="button-group">
+            <button id="exportSelected" style="display: none;">Export Selected</button>
+            <button id="cancelExport" style="display: none;">Cancel</button>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="status-text" id="statusText"></div>
+    </div>
 
 <script src="popup.js"></script>
 </body>

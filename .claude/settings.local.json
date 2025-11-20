@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo:*)",
+      "Bash(node --check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
