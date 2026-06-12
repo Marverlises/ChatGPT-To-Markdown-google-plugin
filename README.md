@@ -1,134 +1,171 @@
-# 🚀 AI对话导出工具 (AI Chat Exporter)
+# ChatGPT to MarkDown plus
 
-<div align="center">
-  <h3>轻松将AI对话导出为标准Markdown格式</h3>
-  <p>支持 ChatGPT, Grok 和 Gemini 平台</p>
-  
-  ![License](https://img.shields.io/badge/License-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/Version-5.0-green.svg)
-  ![Platform](https://img.shields.io/badge/Platform-Chrome-orange.svg)
-</div>
+一款 Chrome 浏览器扩展，可将 **ChatGPT**、**Gemini**、**Grok**、**DeepSeek** 等 AI 聊天网站的对话导出为 Markdown 文件，支持单条导出、批量导出与剪贴板复制。
 
-## ✨ 功能特点
+当前版本：**5.6** · Manifest V3
 
-- 🔄 **多平台支持**：同时支持 **ChatGPT**, **Grok** 和 **Gemini** 三大AI平台
-- 📝 **完整内容保留**：精确导出所有对话内容，包括**代码块**、**数学公式**、**链接**和**格式化文本**
-- 🎨 **标准Markdown格式**：输出符合标准的Markdown格式，确保最佳兼容性
-- 💾 **双重导出选项**：支持直接下载.md文件或复制到剪贴板
-- 🖼️ **Typora完美兼容**：特别优化以确保在Typora等Markdown编辑器中正确显示
-- 🔘 **界面控制**：可以通过弹窗开关控制页面上导出按钮的显示
-- 🛠️ **对应Google插件**：提供[Chrome插件](https://chromewebstore.google.com/detail/chatgpt-to-markdown-plus/gcocgmkjaagjcijfmocbjghbpinamnhp?hl=zh-CN&utm_source=ext_sidebar)版本，方便在Google平台上使用，插件市场搜索 **ChatGPT to MarkDown plus**
+## 功能特性
 
-## 🛠️ 安装步骤
+### 单条对话导出
 
-### 步骤 1: 下载代码库
+- 将当前页面的完整对话导出为 `.md` 文件
+- 自动从页面标题生成文件名
+- 支持将对话中的图片下载到 `images/` 子目录，并在 Markdown 中使用相对路径引用
+- 导出文件头部包含 `source` 元数据，标明来源平台
 
-克隆或下载本仓库到本地电脑。
+### 复制到剪贴板
 
-### 步骤 2: 加载插件
+- 在弹窗中预览 Markdown 内容
+- 一键复制到系统剪贴板
 
-![image-20240208173306163-1707387378543-1](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/5a371f83-1a2a-422e-99c0-7317074f434f)
+### 页面浮动按钮
 
-1. 打开Chrome浏览器，进入扩展程序页面（chrome://extensions/）
-2. 开启右上角的"开发者模式"
-3. 点击"加载已解压的扩展程序"
-4. 选择下载的仓库文件夹，点击确认
+- 在支持的网站右上角显示 **Export Chat** 按钮
+- 可在扩展弹窗中通过开关控制显示/隐藏
 
-### 步骤 3: 使用插件
+### 批量导出
 
-![image-20240208173337825](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/3e75a5bb-4a3d-459c-bfff-7a695a88a431)
+| 平台 | 批量导出 | 说明 |
+|------|----------|------|
+| ChatGPT | ✅ | 通过官方 API 拉取会话列表，导出前会自动刷新页面以捕获认证信息 |
+| Gemini | ✅ | 通过页面内部接口拉取历史会话 |
+| Grok | ❌ | 仅支持当前页单条导出 |
+| DeepSeek | ❌ | 仅支持当前页单条导出 |
 
-当您打开支持的AI平台网站时（ChatGPT, Grok或Gemini），您将在页面上看到绿色的"Export Chat"按钮。
+批量导出支持暂停、继续、停止，失败时自动重试，并在页面右下角显示进度面板。
 
-使用方法:
-1. 浏览您想要导出的对话
-2. 点击绿色的"Export Chat"按钮直接下载Markdown文件
-3. 或者点击插件图标，选择"Copy to Clipboard"将内容复制到剪贴板
+### ChatGPT 取消归档
 
-## 📋 导出效果
+- 一键对所有 ChatGPT 会话发起取消归档请求
+- 支持暂停、继续、停止与失败重试
+- 仅在 ChatGPT 页面可用
 
-导出的.md文件可以完美在Typora等Markdown编辑器中打开:
+### Markdown 转换能力
 
-![image-20240208173402018](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/f7a8d7fa-2edd-4118-92d8-72e920cdbfbf)
+HTML 转 Markdown 时支持：
 
-![image-20240208173511856](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/d1b4a046-76e9-4330-803e-6188d1cf91df)
+- 数学公式（KaTeX / LaTeX）
+- 加粗、斜体、行内代码、代码块
+- 链接、图片、列表、标题、段落
+- 表格、引用块
 
-## 🌐 支持的平台
+各平台通过独立的 Provider 适配 DOM 结构与 API 差异。
 
-| 平台 | 状态 | 支持的功能 |
-|------|------|------------|
-| ChatGPT | ✅ 完全支持 | 代码块、数学公式、链接、列表、表格等 |
-| Grok | ✅ 完全支持 | 代码块、数学公式、链接、格式化文本等 |
-| Gemini | ✅ 支持 | 代码块、链接、列表、表格等 |
+## 支持的网站
 
-## 📜 许可证
+| 平台 | 域名 |
+|------|------|
+| ChatGPT | `chatgpt.com`、`*.chatgpt.com`、`*.openai.com` |
+| Gemini | `gemini.google.com` |
+| Grok | `grok.com`、`*.grok.com` |
+| DeepSeek | `chat.deepseek.com`、`*.deepseek.com` |
 
-本项目采用MIT许可证。详情请参阅LICENSE文件。
+## 安装方法
 
----
+### 从源码加载（开发者模式）
 
-# 🚀 AI Chat Exporter
+1. 克隆或下载本仓库到本地
+2. 打开 Chrome，访问 `chrome://extensions/`
+3. 开启右上角 **开发者模式**
+4. 点击 **加载已解压的扩展程序**，选择本项目根目录
+5. 打开任意支持的 AI 聊天网站，点击浏览器工具栏中的扩展图标即可使用
 
-<div align="center">
-  <h3>Easily Export AI Conversations to Standard Markdown Format</h3>
-  <p>Support for ChatGPT, Grok, and Gemini platforms</p>
-  
-  ![License](https://img.shields.io/badge/License-MIT-blue.svg)
-  ![Version](https://img.shields.io/badge/Version-5.0-green.svg)
-  ![Platform](https://img.shields.io/badge/Platform-Chrome-orange.svg)
-</div>
+> 扩展图标文件（`image16.png`、`image48.png`、`image128.png`）需存在于项目根目录，否则加载时可能提示缺少资源。
 
-## ✨ Features
+## 使用方法
 
-- 🔄 **Multi-platform Support**: Works with **ChatGPT**, **Grok**, and **Gemini**
-- 📝 **Complete Content Preservation**: Accurately exports all conversation content, including **code blocks**, **mathematical formulas**, **links**, and **formatted text**
-- 🎨 **Standard Markdown Format**: Outputs compliant Markdown format for optimal compatibility
-- 💾 **Dual Export Options**: Download .md files directly or copy to clipboard
-- 🖼️ **Typora Compatibility**: Specially optimized for correct display in Typora and other Markdown editors
-- 🔘 **Interface Control**: Toggle the export button visibility through popup settings
+### 通过扩展弹窗
 
-## 🛠️ Installation
+点击浏览器工具栏中的扩展图标，在弹窗中可选择：
 
-### Step 1: Download Repository
+| 按钮 | 功能 |
+|------|------|
+| **Export as Markdown** | 导出当前对话为 `.md` 文件 |
+| **Bulk Export** | 批量导出当前平台的所有历史会话（ChatGPT / Gemini） |
+| **Unarchive All ChatGPT Chats** | 取消归档所有 ChatGPT 会话 |
+| **Copy to Clipboard** | 复制当前对话为 Markdown |
+| **Show 'Export Chat' button** | 切换页面浮动导出按钮的显示 |
 
-Clone or download this repository to your local computer.
+### 通过页面按钮
 
-### Step 2: Load Extension
+在支持的网站上，页面右上角会显示绿色的 **Export Chat** 按钮，点击即可直接导出当前对话。
 
-![image-20240208173306163-1707387378543-1](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/5a371f83-1a2a-422e-99c0-7317074f434f)
+### 批量导出注意事项
 
-1. Open Chrome browser and go to the extensions page (chrome://extensions/)
-2. Enable "Developer mode" in the top right corner
-3. Click "Load unpacked"
-4. Select the downloaded repository folder and confirm
+- **ChatGPT**：点击批量导出后页面会自动刷新，刷新完成后自动开始导出；请保持已登录状态
+- **Gemini**：直接在原页面开始导出，无需刷新
+- 批量导出会在请求之间加入随机延迟，以降低触发限流的风险
+- 导出文件默认保存到浏览器下载目录下的 `chatgpt-bulk-export/` 或 `gemini-bulk-export/` 子文件夹
 
-### Step 3: Use Extension
+## 项目结构
 
-![image-20240208173337825](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/3e75a5bb-4a3d-459c-bfff-7a695a88a431)
+```
+.
+├── manifest.json              # 扩展清单（Manifest V3）
+├── background.js              # Service Worker：下载、请求头捕获、批量导出调度
+├── content.js                 # 内容脚本：导出逻辑、UI、HTML→Markdown 转换
+├── popup.html / popup.js      # 扩展弹窗界面
+├── sites.js                   # 支持的网站注册表
+└── providers/
+    ├── provider-registry.js   # Provider 注册中心
+    ├── chatgpt-provider.js    # ChatGPT 适配（含批量导出、取消归档）
+    ├── gemini-provider.js     # Gemini 适配（含批量导出）
+    ├── grok-provider.js       # Grok 适配
+    └── deepseek-provider.js   # DeepSeek 适配
+```
 
-When you open a supported AI platform (ChatGPT, Grok, or Gemini), you'll see the green "Export Chat" button on the page.
+## 架构说明
 
-Usage:
-1. Browse the conversation you want to export
-2. Click the green "Export Chat" button to download the Markdown file directly
-3. Or click the extension icon and choose "Copy to Clipboard" to copy the content
+扩展采用 **站点注册表 + Provider 插件** 的分层设计：
 
-## 📋 Export Results
+- **`sites.js`**：定义各平台的域名匹配、权限、批量导出配置
+- **`providers/*.js`**：各平台独立的 DOM 解析、API 调用、图片本地化逻辑
+- **`content.js`**：统一的导出流程、Markdown 转换、批量任务调度
+- **`background.js`**：文件下载、ChatGPT 认证头捕获、页面刷新后自动续跑批量任务
 
-The exported .md files can be perfectly opened in Markdown editors like Typora:
+新增平台时，只需添加对应的 Site 配置和 Provider 实现，并在 `manifest.json` 中注册脚本即可。
 
-![image-20240208173402018](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/f7a8d7fa-2edd-4118-92d8-72e920cdbfbf)
+## 权限说明
 
-![image-20240208173511856](https://github.com/thisisbaiy/ChatGPT-To-Markdown-google-plugin/assets/96861449/d1b4a046-76e9-4330-803e-6188d1cf91df)
+扩展申请以下权限以完成核心功能：
 
-## 🌐 Supported Platforms
+| 权限 | 用途 |
+|------|------|
+| `tabs` | 获取当前标签页并向内容脚本发送消息 |
+| `webRequest` | 捕获 ChatGPT 页面的认证请求头（用于批量导出 API） |
+| `downloads` | 下载 Markdown 文件与对话中的图片 |
+| `scripting` | 在页面未连接时重新注入内容脚本 |
+| `host_permissions` | 访问各 AI 聊天网站的页面与 API |
 
-| Platform | Status | Supported Features |
-|----------|--------|-------------------|
-| ChatGPT | ✅ Full Support | Code blocks, math formulas, links, lists, tables, etc. |
-| Grok | ✅ Full Support | Code blocks, math formulas, links, formatted text, etc. |
-| Gemini | ✅ Supported | Code blocks, links, lists, tables, etc. |
+## 常见问题
 
-## 📜 License
+**导出按钮没有出现？**
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+- 确认当前网站在支持列表中
+- 检查弹窗中的 **Show 'Export Chat' button** 开关是否开启
+- 尝试刷新页面
+
+**批量导出提示无法连接页面？**
+
+- 刷新目标网站页面后重试
+- 在 `chrome://extensions/` 中重新加载扩展
+
+**ChatGPT 批量导出没有数据？**
+
+- 确认已登录 ChatGPT 账号
+- 批量导出前会刷新页面，请勿在刷新完成前关闭标签页
+
+**图片没有下载？**
+
+- 部分图片受平台鉴权保护，可能下载失败；失败时 Markdown 中仍保留原始图片 URL
+
+## 许可证
+
+本项目基于 [Apache License 2.0](LICENSE) 开源。
+
+## 作者与致谢
+
+本项目基于 yebv 的开源作品二次开发。
+
+- **当前维护**：allen
+- **原作者**：yebv

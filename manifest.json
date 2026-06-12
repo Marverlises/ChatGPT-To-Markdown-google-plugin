@@ -1,9 +1,24 @@
 {
   "manifest_version": 3,
   "name": "ChatGPT to MarkDown plus",
-  "version": "5.5",
-  "description": "Export chat history from ChatGPT and Grok websites to normal format as Markdown, which can be opened via typora exactly.",
-  "permissions": [],
+  "version": "5.6",
+  "description": "Export chat history from ChatGPT, Gemini, Grok, DeepSeek and other AI chat websites as Markdown.",
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "downloads",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://*.chatgpt.com/*",
+    "https://*.openai.com/*",
+    "https://gemini.google.com/*",
+    "https://grok.com/*",
+    "https://*.grok.com/*",
+    "https://chat.deepseek.com/*",
+    "https://*.deepseek.com/*"
+  ],
   "action": {
     "default_icon": {
       "16": "image16.png",
@@ -20,10 +35,20 @@
       "matches": [
         "https://*.openai.com/*",
         "https://chatgpt.com/*",
+        "https://*.chatgpt.com/*",
         "https://grok.com/*",
-        "https://gemini.google.com/*"
+        "https://*.grok.com/*",
+        "https://gemini.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://*.deepseek.com/*"
       ],
       "js": [
+        "sites.js",
+        "providers/provider-registry.js",
+        "providers/chatgpt-provider.js",
+        "providers/gemini-provider.js",
+        "providers/grok-provider.js",
+        "providers/deepseek-provider.js",
         "content.js"
       ],
       "run_at": "document_end"

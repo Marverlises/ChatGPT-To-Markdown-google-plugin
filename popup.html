@@ -26,6 +26,20 @@
             border-radius: 12px;
         }
 
+        #bulkExportButton {
+            border-radius: 12px;
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+            display: block;
+        }
+
+        #unarchiveChatGPTButton {
+            border-radius: 12px;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            display: block;
+        }
+
         /* Copy 按钮的圆角 */
         #copyButton {
             border-radius: 12px;
@@ -35,6 +49,16 @@
         button:hover {
             background-color: #45a049;
             border: 2px solid #45a049;
+        }
+
+        #bulkExportButton:hover {
+            background-color: #5a32a3;
+            border-color: #5a32a3;
+        }
+
+        #unarchiveChatGPTButton:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
         }
 
         /* 开关按钮样式 */
@@ -89,10 +113,20 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        #statusMessage {
+            min-height: 18px;
+            margin: 8px 2px 0;
+            font-size: 12px;
+            color: #555;
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
 <button id="exportButton">Export as Markdown</button>
+<button id="bulkExportButton">Bulk Export</button>
+<button id="unarchiveChatGPTButton">Unarchive All ChatGPT Chats</button>
 <!-- 添加一个按钮，实现点击弹出对话框进行选择复制 -->
 <button id="copyButton">Copy to Clipboard</button>
 
@@ -104,7 +138,9 @@
     </label>
     <span>Show 'Export Chat' button</span>
 </div>
+<div id="statusMessage" role="status" aria-live="polite"></div>
 
+<script src="sites.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>
