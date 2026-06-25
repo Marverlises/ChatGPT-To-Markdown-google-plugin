@@ -288,9 +288,19 @@ function exportChatAsMarkdown() {
     markdownContent = markdownContent.replace(/&amp;/g, '&');
 
     if (markdownContent) {
-        download(markdownContent, 'chat-export.md', 'text/markdown');
+        let filename = getFilename() || 'chat-export';
+        download(markdownContent, filename + '.md', 'text/markdown');
     } else {
         console.log("未找到对话内容");
+    }
+
+    function getFilename() {
+        if (isGrok) {
+            const el = document.querySelector('.bg-button-ghost-hover');
+            const title = el?.textContent?.trim();
+            return title ? `${title} - Grok` : "";
+        }
+        return "";
     }
 }
 
